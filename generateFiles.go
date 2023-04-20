@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 )
 
@@ -48,9 +47,9 @@ func main() {
 
 				extension := fileExtensions[rand.Intn(len(fileExtensions))]
 
-				fileName := "testfile" + strconv.Itoa(i) + extension
+				fileName := generateFileName()
 
-				err := generateFile(path, fileName, fileSize)
+				err := generateFile(path, fileName+extension, fileSize)
 				if err != nil {
 					panic(err)
 				}
@@ -63,6 +62,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func generateFileName() string {
+	const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+	name := make([]byte, 10)
+	for i := range name {
+		name[i] = letters[rand.Intn(len(letters))]
+	}
+
+	return string(name)
 }
 
 func generateFile(path string, name string, size int) error {
