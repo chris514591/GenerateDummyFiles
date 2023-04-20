@@ -10,7 +10,9 @@ import (
 )
 
 type Config struct {
-	Path string `json:"path"`
+	Path          string `json:"path"`
+	MinNumOfFiles int    `json:"min_num_of_files"`
+	MaxNumOfFiles int    `json:"max_num_of_files"`
 }
 
 func main() {
@@ -20,7 +22,6 @@ func main() {
 	fileExtensions := []string{".txt", ".cfg", ".csv"}
 
 	rand.Seed(time.Now().UnixNano())
-	numOfFiles := rand.Intn(51) + 50
 
 	configFile, err := os.ReadFile("config.json")
 	if err != nil {
@@ -32,6 +33,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
 
 	err = filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
@@ -62,18 +65,18 @@ func main() {
 }
 
 func generateFileName() string {
-	const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
+	const characters = "abcdefghijklmnopqrstuvwxyz0123456789"
 
-	name := make([]byte, 10)
-	for i := range name {
-		name[i] = letters[rand.Intn(len(letters))]
+	fileName := make([]byte, 10)
+	for i := range fileName {
+		fileName[i] = characters[rand.Intn(len(characters))]
 	}
 
-	return string(name)
+	return string(fileName)
 }
 
-func generateFile(path string, name string, size int) error {
-	file, err := os.Create(filepath.Join(path, name))
+func generateFile(path string, fileName string, size int) error {
+	file, err := os.Create(filepath.Join(path, fileName))
 	if err != nil {
 		return err
 	}
