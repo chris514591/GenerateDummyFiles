@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io/fs"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -22,7 +22,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	numOfFiles := rand.Intn(51) + 50
 
-	configFile, err := ioutil.ReadFile("config.json")
+	configFile, err := os.ReadFile("config.json")
 	if err != nil {
 		panic(err)
 	}
@@ -33,15 +33,12 @@ func main() {
 		panic(err)
 	}
 
-	// Walk the given directory and its subdirectories
-	err = filepath.Walk(config.Path, func(path string, info os.FileInfo, err error) error {
+	err = filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// Check if the file is a directory
-		if info.IsDir() {
-			// Generate files in this directory
+		if dirEntry.IsDir() {
 			for i := 1; i <= numOfFiles; i++ {
 				fileSize := rand.Intn(maxFileSize-minFileSize) + minFileSize
 
