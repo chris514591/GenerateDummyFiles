@@ -25,20 +25,20 @@ func main() {
 
 	configFile, err := os.ReadFile("config.json")
 	if err != nil {
-		log.Fatalf("Failed to read config file: %v", err)
+		log.Printf("Failed to read config file: %v", err)
 	}
 
 	var config Config
 	err = json.Unmarshal(configFile, &config)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal config file: %v", err)
+		log.Printf("Failed to unmarshal config file: %v", err)
 	}
 
 	numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
 
 	logFile, err := os.OpenFile("errors.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		log.Fatalf("Failed to open errors.log file: %v", err)
+		log.Printf("Failed to open errors.log file: %v", err)
 	}
 	defer logFile.Close()
 	log.SetOutput(logFile)

@@ -1,1 +1,3 @@
 2023/04/20 12:14:16 Failed to walk directory: CreateFile C:/Users/xevic/Downloads/test12/: The system cannot find the file specified.
+2023/04/20 12:18:07 Failed to walk directory: Lstat : The system cannot find the path specified.
+2023/04/20 12:18:17 Failed to walk directory: Lstat : The system cannot find the path specified.
