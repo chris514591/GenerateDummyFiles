@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/fs"
+	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -25,16 +26,23 @@ func main() {
 
 	configFile, err := os.ReadFile("config.json")
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to read config file: %v", err)
 	}
 
 	var config Config
 	err = json.Unmarshal(configFile, &config)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to unmarshal config file: %v", err)
 	}
 
 	numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
+
+	// Check if errors.log file exists, and create it if it doesn't
+	if _, err := os.Stat("errors.log"); os.IsNotExist(err) {
+		if _, err := os.Create("errors.log"); err != nil {
+			log.Fatalf("Failed to create errors.log file: %v", err)
+		}
+	}
 
 	err = filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
@@ -51,7 +59,14 @@ func main() {
 
 				err := generateFile(path, fileName+extension, fileSize)
 				if err != nil {
-					panic(err)
+					// Log the error to errors.log file
+					logFile, err := os.OpenFile("errors.log", os.O_APPEND|os.O_WRONLY, 0644)
+					if err != nil {
+						log.Fatalf("Failed to open errors.log file: %v", err)
+					}
+					defer logFile.Close()
+					log.SetOutput(logFile)
+					log.Printf("Failed to generate file: %v", err)
 				}
 			}
 		}
@@ -60,7 +75,7 @@ func main() {
 	})
 
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to walk directory: %v", err)
 	}
 }
 
