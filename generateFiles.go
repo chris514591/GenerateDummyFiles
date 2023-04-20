@@ -15,7 +15,6 @@ type Config struct {
 }
 
 func main() {
-
 	minFileSize := 5000
 	maxFileSize := 5000000
 
@@ -35,17 +34,34 @@ func main() {
 		panic(err)
 	}
 
-	for i := 1; i <= numOfFiles; i++ {
-		fileSize := rand.Intn(maxFileSize-minFileSize) + minFileSize
-
-		extension := fileExtensions[rand.Intn(len(fileExtensions))]
-
-		fileName := "testfile" + strconv.Itoa(i) + extension
-
-		err := generateFile(config.Path, fileName, fileSize)
+	// Walk the given directory and its subdirectories
+	err = filepath.Walk(config.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		// Check if the file is a directory
+		if info.IsDir() {
+			// Generate files in this directory
+			for i := 1; i <= numOfFiles; i++ {
+				fileSize := rand.Intn(maxFileSize-minFileSize) + minFileSize
+
+				extension := fileExtensions[rand.Intn(len(fileExtensions))]
+
+				fileName := "testfile" + strconv.Itoa(i) + extension
+
+				err := generateFile(path, fileName, fileSize)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		panic(err)
 	}
 }
 
