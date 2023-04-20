@@ -36,15 +36,17 @@ func main() {
 
 	numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
 
-	if _, err := os.Stat("errors.log"); os.IsNotExist(err) {
-		if _, err := os.Create("errors.log"); err != nil {
-			log.Fatalf("Failed to create errors.log file: %v", err)
-		}
+	logFile, err := os.OpenFile("errors.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open errors.log file: %v", err)
 	}
+	defer logFile.Close()
+	log.SetOutput(logFile)
 
 	err = filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
-			return err
+			log.Printf("Failed to walk directory: %v", err)
+			return nil
 		}
 
 		if dirEntry.IsDir() {
@@ -57,12 +59,6 @@ func main() {
 
 				err := generateFile(path, fileName+extension, fileSize)
 				if err != nil {
-					logFile, err := os.OpenFile("errors.log", os.O_APPEND|os.O_WRONLY, 0644)
-					if err != nil {
-						log.Fatalf("Failed to open errors.log file: %v", err)
-					}
-					defer logFile.Close()
-					log.SetOutput(logFile)
 					log.Printf("Failed to generate file: %v", err)
 				}
 			}
@@ -72,7 +68,7 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatalf("Failed to walk directory: %v", err)
+		log.Printf("Failed to walk directory: %v", err)
 	}
 }
 
