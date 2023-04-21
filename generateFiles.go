@@ -21,63 +21,82 @@ type Config struct {
 }
 
 func main() {
-	fileExtensions := []string{".txt", ".csv", ".html"}
-
-	rand.Seed(time.Now().UnixNano())
-
-	configFile, err := os.ReadFile("config.json")
+	config, err := readConfigFile("config.json")
 	if err != nil {
-		log.Printf("Failed to read config file: %v", err)
+		log.Fatalf("Failed to read config file: %v", err)
+	}
+
+	errLogFile, err := openErrorsLogFile("errors.log")
+	if err != nil {
+		log.Fatalf("Failed to open errors.log file: %v", err)
+	}
+	defer errLogFile.Close()
+	log.SetOutput(errLogFile)
+
+	err = walkDirectories(config, generateFiles)
+	if err != nil {
+		log.Fatalf("Failed to walk directory: %v", err)
+	}
+}
+
+func readConfigFile(filename string) (Config, error) {
+	configFile, err := os.ReadFile(filename)
+	if err != nil {
+		return Config{}, err
 	}
 
 	var config Config
 	err = json.Unmarshal(configFile, &config)
 	if err != nil {
-		log.Printf("Failed to unmarshal config file: %v", err)
+		return Config{}, err
 	}
 
-	numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
+	return config, nil
+}
 
-	logFile, err := os.OpenFile("errors.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.Printf("Failed to open errors.log file: %v", err)
-	}
-	defer logFile.Close()
-	log.SetOutput(logFile)
+func openErrorsLogFile(filename string) (*os.File, error) {
+	return os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+}
 
-	err = filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
+func walkDirectories(config Config, generateFilesFunc func(string, int, []string, Config) error) error {
+	rand.Seed(time.Now().UnixNano())
+
+	return filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
 			log.Printf("Failed to walk directory: %v", err)
 			return nil
 		}
 
 		if dirEntry.IsDir() {
-			for i := 1; i <= numOfFiles; i++ {
-				fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
+			numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
+			fileExtensions := []string{".txt", ".csv", ".html"}
 
-				extension := fileExtensions[rand.Intn(len(fileExtensions))]
-
-				fileName := generateFileName()
-
-				err := generateFile(path, fileName+extension, fileSize)
-				if err != nil {
-					log.Printf("Failed to generate file: %v", err)
-				}
-			}
+			return generateFilesFunc(path, numOfFiles, fileExtensions, config)
 		}
 
 		return nil
 	})
-
-	if err != nil {
-		log.Printf("Failed to walk directory: %v", err)
-	}
 }
 
-func generateFileName() string {
+func generateFiles(path string, numOfFiles int, fileExtensions []string, config Config) error {
+	for i := 1; i <= numOfFiles; i++ {
+		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
+		extension := fileExtensions[rand.Intn(len(fileExtensions))]
+		fileName := generateFileName(10)
+
+		err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
+		if err != nil {
+			log.Printf("Failed to generate file: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func generateFileName(length int) string {
 	const characters = "abcdefghijklmnopqrstuvwxyz0123456789"
 
-	fileName := make([]byte, 10)
+	fileName := make([]byte, length)
 	for i := range fileName {
 		fileName[i] = characters[rand.Intn(len(characters))]
 	}
@@ -85,16 +104,14 @@ func generateFileName() string {
 	return string(fileName)
 }
 
-func generateFile(path string, fileName string, size int) error {
-	file, err := os.Create(filepath.Join(path, fileName))
+func generateFile(filePath string, data string) error {
+	file, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	data := []byte(lorem.Paragraph(1, size/100))
-
-	_, err = file.Write(data)
+	_, err = file.Write([]byte(data))
 	if err != nil {
 		return err
 	}
