@@ -92,7 +92,7 @@ func generateFile(path string, fileName string, size int) error {
 	}
 	defer file.Close()
 
-	data := []byte(lorem.Paragraph(2, 5))
+	data := []byte(lorem.Paragraph(1, size/100))
 
 	_, err = file.Write(data)
 	if err != nil {
