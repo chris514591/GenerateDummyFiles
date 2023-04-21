@@ -21,7 +21,7 @@ type Config struct {
 }
 
 func main() {
-	fileExtensions := []string{".txt", ".cfg", ".csv"}
+	fileExtensions := []string{".txt", ".csv"}
 
 	rand.Seed(time.Now().UnixNano())
 
