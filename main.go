@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"log"
 	"math/rand"
@@ -79,6 +80,8 @@ func walkDirectories(config Config, generateFilesFunc func(string, int, []string
 }
 
 func generateFiles(path string, numOfFiles int, fileExtensions []string, config Config) error {
+	numOfGeneratedFiles := 0
+
 	for i := 1; i <= numOfFiles; i++ {
 		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
 		extension := fileExtensions[rand.Intn(len(fileExtensions))]
@@ -87,6 +90,10 @@ func generateFiles(path string, numOfFiles int, fileExtensions []string, config 
 		err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
 		if err != nil {
 			log.Printf("Failed to generate file: %v", err)
+		} else {
+			numOfGeneratedFiles++
+			percentage := float64(numOfGeneratedFiles) / float64(numOfFiles) * 100
+			fmt.Printf("Generated %d files (%.0f%%)\n", numOfGeneratedFiles, percentage)
 		}
 	}
 
