@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/drhodes/golorem"
+	lorem "github.com/drhodes/golorem"
 )
 
 type Config struct {
@@ -92,7 +92,7 @@ func generateFile(path string, fileName string, size int) error {
 	}
 	defer file.Close()
 
-	data := []byte(golorem.Paragraph(2, 5))
+	data := []byte(lorem.Paragraph(2, 5))
 
 	_, err = file.Write(data)
 	if err != nil {
