@@ -1,15 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"io/fs"
 	"log"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"time"
-
-	Lognconfig "GenerateDummyFiles/Packagelognconfig"
-
-	Fileutil "GenerateDummyFiles/Packagefileutil"
 
 	lorem "github.com/drhodes/golorem"
 )
@@ -23,12 +21,12 @@ type Config struct {
 }
 
 func main() {
-	config, err := Fileutil.ReadConfigFile("config.json")
+	config, err := readConfigFile("config.json")
 	if err != nil {
 		log.Fatalf("Failed to read config file: %v", err)
 	}
 
-	errLogFile, err := Fileutil.OpenErrorsLogFile("errors.log")
+	errLogFile, err := openErrorsLogFile("errors.log")
 	if err != nil {
 		log.Fatalf("Failed to open errors.log file: %v", err)
 	}
@@ -39,6 +37,25 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to walk directory: %v", err)
 	}
+}
+
+func readConfigFile(filename string) (Config, error) {
+	configFile, err := os.ReadFile(filename)
+	if err != nil {
+		return Config{}, err
+	}
+
+	var config Config
+	err = json.Unmarshal(configFile, &config)
+	if err != nil {
+		return Config{}, err
+	}
+
+	return config, nil
+}
+
+func openErrorsLogFile(filename string) (*os.File, error) {
+	return os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 }
 
 func walkDirectories(config Config, generateFilesFunc func(string, int, []string, Config) error) error {
@@ -65,12 +82,38 @@ func generateFiles(path string, numOfFiles int, fileExtensions []string, config 
 	for i := 1; i <= numOfFiles; i++ {
 		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
 		extension := fileExtensions[rand.Intn(len(fileExtensions))]
-		fileName := Lognconfig.GenerateFileName(10)
+		fileName := generateFileName(10)
 
-		err := Fileutil.GenerateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
+		err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
 		if err != nil {
 			log.Printf("Failed to generate file: %v", err)
 		}
+	}
+
+	return nil
+}
+
+func generateFileName(length int) string {
+	const characters = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+	fileName := make([]byte, length)
+	for i := range fileName {
+		fileName[i] = characters[rand.Intn(len(characters))]
+	}
+
+	return string(fileName)
+}
+
+func generateFile(filePath string, data string) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write([]byte(data))
+	if err != nil {
+		return err
 	}
 
 	return nil
