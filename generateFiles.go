@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/drhodes/golorem"
 )
 
 type Config struct {
@@ -90,8 +92,7 @@ func generateFile(path string, fileName string, size int) error {
 	}
 	defer file.Close()
 
-	data := make([]byte, size)
-	rand.Read(data)
+	data := []byte(golorem.Paragraph(2, 5))
 
 	_, err = file.Write(data)
 	if err != nil {
