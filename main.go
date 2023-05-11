@@ -34,28 +34,7 @@ func main() {
 	defer errLogFile.Close()
 	log.SetOutput(errLogFile)
 
-	totalFiles := getTotalFiles(config)
-	generatedFiles := 0
-
-	err = walkDirectories(config, func(path string, numOfFiles int, fileExtensions []string, config Config) error {
-		for i := 1; i <= numOfFiles; i++ {
-			fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
-			extension := fileExtensions[rand.Intn(len(fileExtensions))]
-			fileName := generateFileName(10)
-
-			err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
-			if err != nil {
-				log.Printf("Failed to generate file: %v", err)
-			} else {
-				generatedFiles++
-				percentage := float64(generatedFiles) / float64(totalFiles) * 100
-				fmt.Printf("Generated %.0f%% of files\n", percentage)
-			}
-		}
-
-		return nil
-	})
-
+	err = walkDirectories(config, generateFiles)
 	if err != nil {
 		log.Fatalf("Failed to walk directory: %v", err)
 	}
@@ -100,6 +79,27 @@ func walkDirectories(config Config, generateFilesFunc func(string, int, []string
 	})
 }
 
+func generateFiles(path string, numOfFiles int, fileExtensions []string, config Config) error {
+	numOfGeneratedFiles := 0
+
+	for i := 1; i <= numOfFiles; i++ {
+		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
+		extension := fileExtensions[rand.Intn(len(fileExtensions))]
+		fileName := generateFileName(10)
+
+		err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
+		if err != nil {
+			log.Printf("Failed to generate file: %v", err)
+		} else {
+			numOfGeneratedFiles++
+			percentage := float64(numOfGeneratedFiles) / float64(numOfFiles) * 100
+			fmt.Printf("Generated %d files (%.0f%%)\n", numOfGeneratedFiles, percentage)
+		}
+	}
+
+	return nil
+}
+
 func generateFileName(length int) string {
 	const characters = "abcdefghijklmnopqrstuvwxyz0123456789"
 
@@ -116,37 +116,12 @@ func generateFile(filePath string, data string) error {
 	if err != nil {
 		return err
 	}
-
 	defer file.Close()
 
 	_, err = file.Write([]byte(data))
-
 	if err != nil {
-
 		return err
 	}
+
 	return nil
-}
-
-func getTotalFiles(config Config) int {
-	totalFiles := 0
-
-	err := filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
-		if err != nil {
-			log.Printf("Failed to walk directory: %v", err)
-			return nil
-		}
-
-		if dirEntry.IsDir() {
-			numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
-			totalFiles += numOfFiles
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		log.Fatalf("Failed to walk directory: %v", err)
-	}
-	return totalFiles
 }
