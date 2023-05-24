@@ -98,7 +98,7 @@ func generateFiles(path string, numOfFiles int, fileExtensions []string, config 
 
 		err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
 		if err != nil {
-			log.Fatalf("Failed to generate file: %v", err)
+			log.Printf("Failed to generate file: %v", err)
 		} else {
 			*numOfGeneratedFilesTotal++
 			percentage := float64(*numOfGeneratedFilesTotal) / float64(totalNumOfFiles) * 100
