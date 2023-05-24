@@ -62,7 +62,7 @@ func readConfigFile(filename string) (Config, error) {
 }
 
 func openErrorsLogFile(filename string) (*os.File, error) {
-	return os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	return os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 }
 
 func walkDirectories(config Config, generateFilesFunc func(string, int, []string, Config) error) error {
@@ -122,7 +122,7 @@ func generateFile(filePath string, data string) error {
 	}
 	defer file.Close()
 
-	_, err = file.Write([]byte(data))
+	_, err = file.WriteString(data)
 	if err != nil {
 		return err
 	}
