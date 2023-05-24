@@ -49,20 +49,25 @@ func main() {
 func readConfigFile(filename string) (Config, error) {
 	configFile, err := os.ReadFile(filename)
 	if err != nil {
-		return Config{}, err
+		log.Fatalf("Failed to read config file: %v", err)
 	}
 
 	var config Config
 	err = json.Unmarshal(configFile, &config)
 	if err != nil {
-		return Config{}, err
+		log.Fatalf("Failed to unmarshal config file: %v", err)
 	}
 
 	return config, nil
 }
 
 func openErrorsLogFile(filename string) (*os.File, error) {
-	return os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open errors.log file: %v", err)
+	}
+
+	return file, nil
 }
 
 func walkDirectories(config Config, generateFilesFunc func(string, int, []string, Config) error) error {
@@ -93,7 +98,7 @@ func generateFiles(path string, numOfFiles int, fileExtensions []string, config 
 
 		err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
 		if err != nil {
-			log.Printf("Failed to generate file: %v", err)
+			log.Fatalf("Failed to generate file: %v", err)
 		} else {
 			*numOfGeneratedFilesTotal++
 			percentage := float64(*numOfGeneratedFilesTotal) / float64(totalNumOfFiles) * 100
@@ -118,13 +123,13 @@ func generateFileName(length int) string {
 func generateFile(filePath string, data string) error {
 	file, err := os.Create(filePath)
 	if err != nil {
-		return err
+		log.Fatalf("Failed to create file: %v", err)
 	}
 	defer file.Close()
 
 	_, err = file.WriteString(data)
 	if err != nil {
-		return err
+		log.Fatalf("Failed to write data to file: %v", err)
 	}
 
 	return nil
