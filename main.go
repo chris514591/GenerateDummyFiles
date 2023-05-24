@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -44,6 +45,13 @@ func main() {
 	}
 
 	fmt.Printf("Generated all files (%d/%d, %.0f%%)\n", numOfGeneratedFilesTotal, totalNumOfFiles, float64(numOfGeneratedFilesTotal)/float64(totalNumOfFiles)*100)
+
+	waitForEnterKey()
+}
+
+func waitForEnterKey() {
+	fmt.Println("Press Enter to exit...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
 }
 
 func readConfigFile(filename string) (Config, error) {
