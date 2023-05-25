@@ -10,7 +10,7 @@ if (-not (Test-Path -Path $outputPath)) {
 
 # Download the repository zip file with authentication headers
 $zipFilePath = Join-Path -Path $outputPath -ChildPath "GenerateDummyFiles.zip"
-Invoke-WebRequest -Uri $url -OutFile $zipFilePath # Remove comment for private repo -Headers @{ "Authorization" = "Bearer $accessToken" }
+Invoke-WebRequest -Uri $url -OutFile $zipFilePath # >Remove comment for private repo< -Headers @{ "Authorization" = "Bearer $accessToken" }
 
 # Extract the contents of the zip file
 $destinationPath = Join-Path -Path $outputPath -ChildPath "GenerateDummyFiles"
