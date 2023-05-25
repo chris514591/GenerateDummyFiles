@@ -59,7 +59,10 @@ func main() {
 // waitForEnterKey waits for the user to press Enter before exiting the program.
 func waitForEnterKey() {
 	fmt.Println("Press Enter to exit...")
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
+	if err != nil {
+		log.Fatalf("Failed to read from stdin: %v", err)
+	}
 }
 
 // readConfigFile reads the configuration data from the provided JSON file.
