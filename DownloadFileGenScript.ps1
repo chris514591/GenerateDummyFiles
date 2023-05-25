@@ -1,5 +1,5 @@
 ﻿$url = "https://github.com/chris514591/GenerateDummyFiles/archive/master.zip"
-$outputPath = "C:\Users\%USERPROFILE%\Downloads"
+$outputPath = "C:\Users\xevic\Downloads"
 
 # Create the output folder if it doesn't exist
 if (-not (Test-Path -Path $outputPath)) {
