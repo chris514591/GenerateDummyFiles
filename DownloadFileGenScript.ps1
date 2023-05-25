@@ -18,6 +18,10 @@ Expand-Archive -Path $zipFilePath -DestinationPath $destinationPath -Force
 
 # Clean up the zip file
 Remove-Item -Path $zipFilePath
+Remove-Item -Path "$destinationPath\GenerateDummyFiles-master\fileGen.go"
+Remove-Item -Path "$destinationPath\GenerateDummyFiles-master\go.mod"
+Remove-Item -Path "$destinationPath\GenerateDummyFiles-master\go.sum"
+Remove-Item -Path "$destinationPath\GenerateDummyFiles-master\DownloadFileGenScript.ps1"
 
 Write-Host "Download and extraction complete."
 Write-Host "Repository contents are located at: $destinationPath"
