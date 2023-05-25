@@ -1,7 +1,7 @@
 ﻿$url = "https://github.com/chris514591/GenerateDummyFiles/archive/master.zip"
 $outputPath = "C:\Users\xevic\Downloads"
 # $accessToken = "YOUR_ACCESS_TOKEN"
-# Use when Folder is private
+# Use accessToken above when repository is private
 
 # Create the output folder if it doesn't exist
 if (-not (Test-Path -Path $outputPath)) {
