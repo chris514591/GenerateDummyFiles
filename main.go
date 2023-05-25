@@ -27,13 +27,13 @@ func main() {
 	// Read the configuration from the config file
 	config, err := readConfigFile("config.json")
 	if err != nil {
-		log.Fatalf("Failed to read config file: %v", err)
+		log.Printf("Failed to read config file: %v", err)
 	}
 
 	// Open the errors.log file for logging errors
 	errLogFile, err := openErrorsLogFile("errors.log")
 	if err != nil {
-		log.Fatalf("Failed to open errors.log file: %v", err)
+		log.Printf("Failed to open errors.log file: %v", err)
 	}
 	defer errLogFile.Close()
 	log.SetOutput(errLogFile)
@@ -46,7 +46,7 @@ func main() {
 		return generateFiles(path, numOfFiles, fileExtensions, config, &numOfGeneratedFilesTotal, totalNumOfFiles)
 	})
 	if err != nil {
-		log.Fatalf("Failed to walk directory: %v", err)
+		log.Printf("Failed to walk directory: %v", err)
 	}
 
 	// Print the summary of generated files
@@ -61,7 +61,7 @@ func waitForEnterKey() {
 	fmt.Println("Press Enter to exit...")
 	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
 	if err != nil {
-		log.Fatalf("Failed to read from stdin: %v", err)
+		log.Printf("Failed to read from stdin: %v", err)
 	}
 }
 
@@ -69,13 +69,13 @@ func waitForEnterKey() {
 func readConfigFile(filename string) (Config, error) {
 	configFile, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatalf("Failed to read config file: %v", err)
+		log.Printf("Failed to read config file: %v", err)
 	}
 
 	var config Config
 	err = json.Unmarshal(configFile, &config)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal config file: %v", err)
+		log.Printf("Failed to unmarshal config file: %v", err)
 	}
 
 	return config, nil
@@ -85,7 +85,7 @@ func readConfigFile(filename string) (Config, error) {
 func openErrorsLogFile(filename string) (*os.File, error) {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("Failed to open errors.log file: %v", err)
+		log.Printf("Failed to open errors.log file: %v", err)
 	}
 
 	return file, nil
@@ -152,13 +152,13 @@ func generateFileName(length int) string {
 func generateFile(filePath string, data string) error {
 	file, err := os.Create(filePath)
 	if err != nil {
-		log.Fatalf("Failed to create file: %v", err)
+		log.Printf("Failed to create file: %v", err)
 	}
 	defer file.Close()
 
 	_, err = file.WriteString(data)
 	if err != nil {
-		log.Fatalf("Failed to write data to file: %v", err)
+		log.Printf("Failed to write data to file: %v", err)
 	}
 
 	return nil
