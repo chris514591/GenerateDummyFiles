@@ -16,6 +16,7 @@ import (
 
 // Config represents the configuration data read from the JSON file.
 type Config struct {
+	// Comments aren't allowed in JSON files so: Use forward slashes, not back slashes for the folder path!
 	Path          string `json:"path"`
 	MinNumOfFiles int    `json:"min_num_of_files"`
 	MaxNumOfFiles int    `json:"max_num_of_files"`
