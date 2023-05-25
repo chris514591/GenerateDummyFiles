@@ -34,7 +34,7 @@ func main() {
 	// Open the errors.log file for logging errors
 	errLogFile, err := openErrorsLogFile("errors.log")
 	if err != nil {
-		log.Printf("Failed to open errors.log file: %v", err)
+		fmt.Printf("Failed to open errors.log file: %v", err)
 	}
 	defer errLogFile.Close()
 	log.SetOutput(errLogFile)
@@ -86,7 +86,7 @@ func readConfigFile(filename string) (Config, error) {
 func openErrorsLogFile(filename string) (*os.File, error) {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Printf("Failed to open errors.log file: %v", err)
+		fmt.Printf("Failed to open errors.log file: %v", err)
 	}
 
 	return file, nil
