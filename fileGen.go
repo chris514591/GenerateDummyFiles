@@ -10,8 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	lorem "github.com/drhodes/golorem"
 )
 
 // Config represents the configuration data read from the JSON file.
@@ -124,7 +122,7 @@ func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFil
 		fileName := generateFileName(10)
 
 		// Generate a file with random content
-		err := generateFile(filepath.Join(path, fileName+extension), lorem.Paragraph(1, fileSize/100))
+		err := generateFile(filepath.Join(path, fileName+extension), fileSize)
 		if err != nil {
 			log.Printf("Failed to generate file: %v", err)
 		} else {
@@ -150,16 +148,22 @@ func generateFileName(length int) string {
 }
 
 // generateFile creates a file with the specified file path and writes the provided data into it.
-func generateFile(filePath string, data string) error {
-	file, err := os.Create(filePath)
+func generateFile(filePath string, fileSize int) error {
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		log.Printf("Failed to create file: %v", err)
+		return err
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(data)
+	// Create a byte slice of the desired file size
+	data := make([]byte, fileSize)
+
+	// Write the data to the file
+	_, err = file.Write(data)
 	if err != nil {
 		log.Printf("Failed to write data to file: %v", err)
+		return err
 	}
 
 	return nil
