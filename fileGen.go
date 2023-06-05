@@ -156,8 +156,18 @@ func generateFile(filePath string, fileSize int) error {
 	}
 	defer file.Close()
 
-	// Create a byte slice of the desired file size
-	data := make([]byte, fileSize)
+	// Write "Success" at the beginning of the file
+	_, err = file.WriteString("Success")
+	if err != nil {
+		log.Printf("Failed to write data to file: %v", err)
+		return err
+	}
+
+	// Calculate the remaining size after writing "Success"
+	remainingSize := fileSize - len("Success")
+
+	// Create a byte slice of the remaining size filled with zeroes
+	data := make([]byte, remainingSize)
 
 	// Write the data to the file
 	_, err = file.Write(data)
