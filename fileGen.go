@@ -17,11 +17,12 @@ import (
 // Config represents the configuration data read from the JSON file.
 type Config struct {
 	// Comments aren't allowed in JSON files so: Use forward slashes, not back slashes for the folder path!
-	Path          string `json:"path"`
-	MinNumOfFiles int    `json:"min_num_of_files"`
-	MaxNumOfFiles int    `json:"max_num_of_files"`
-	MinFileSize   int    `json:"min_file_size"`
-	MaxFileSize   int    `json:"max_file_size"`
+	Path           string   `json:"path"`
+	MinNumOfFiles  int      `json:"min_num_of_files"`
+	MaxNumOfFiles  int      `json:"max_num_of_files"`
+	MinFileSize    int      `json:"min_file_size"`
+	MaxFileSize    int      `json:"max_file_size"`
+	FileExtensions []string `json:"file_extensions"`
 }
 
 func main() {
@@ -42,9 +43,9 @@ func main() {
 	var totalNumOfFiles, numOfGeneratedFilesTotal int
 
 	// Walk through directories and generate files
-	err = walkDirectories(config, func(path string, numOfFiles int, fileExtensions []string, config Config) error {
+	err = walkDirectories(config, func(path string, numOfFiles int, config Config) error {
 		totalNumOfFiles += numOfFiles
-		return generateFiles(path, numOfFiles, fileExtensions, config, &numOfGeneratedFilesTotal, totalNumOfFiles)
+		return generateFiles(path, numOfFiles, config, &numOfGeneratedFilesTotal, totalNumOfFiles)
 	})
 	if err != nil {
 		log.Printf("Failed to walk directory: %v", err)
@@ -93,7 +94,7 @@ func openErrorsLogFile(filename string) (*os.File, error) {
 }
 
 // walkDirectories recursively walks through directories starting from the provided path.
-func walkDirectories(config Config, generateFilesFunc func(string, int, []string, Config) error) error {
+func walkDirectories(config Config, generateFilesFunc func(string, int, Config) error) error {
 	rand.Seed(time.Now().UnixNano())
 
 	return filepath.WalkDir(config.Path, func(path string, dirEntry fs.DirEntry, err error) error {
@@ -103,12 +104,11 @@ func walkDirectories(config Config, generateFilesFunc func(string, int, []string
 		}
 
 		if dirEntry.IsDir() {
-			// Generate random number of files and file extensions
+			// Generate random number of files
 			numOfFiles := rand.Intn(config.MaxNumOfFiles-config.MinNumOfFiles+1) + config.MinNumOfFiles
-			fileExtensions := []string{".txt", ".csv", ".html"}
 
 			// Generate files in the current directory
-			return generateFilesFunc(path, numOfFiles, fileExtensions, config)
+			return generateFilesFunc(path, numOfFiles, config)
 		}
 
 		return nil
@@ -116,11 +116,11 @@ func walkDirectories(config Config, generateFilesFunc func(string, int, []string
 }
 
 // generateFiles generates the specified number of files in the given path with random content.
-func generateFiles(path string, numOfFiles int, fileExtensions []string, config Config, numOfGeneratedFilesTotal *int, totalNumOfFiles int) error {
+func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFilesTotal *int, totalNumOfFiles int) error {
 	for i := 1; i <= numOfFiles; i++ {
 		// Generate random file size, extension, and file name
 		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
-		extension := fileExtensions[rand.Intn(len(fileExtensions))]
+		extension := config.FileExtensions[rand.Intn(len(config.FileExtensions))]
 		fileName := generateFileName(10)
 
 		// Generate a file with random content
