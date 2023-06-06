@@ -51,7 +51,7 @@ func main() {
 	}
 
 	// Print the summary of generated files
-	fmt.Printf("Generated all files (%d/%d, %.0f%%)\n", numOfGeneratedFilesTotal, totalNumOfFiles, float64(numOfGeneratedFilesTotal)/float64(totalNumOfFiles)*100)
+	fmt.Printf("Generated all files (%d/%d, %.2f%%)\n", numOfGeneratedFilesTotal, totalNumOfFiles, float64(numOfGeneratedFilesTotal)/float64(totalNumOfFiles)*100)
 	printFileSize("Total size of generated files", totalFilesSize)
 
 	// Wait for user input before exiting
@@ -131,7 +131,7 @@ func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFil
 			*numOfGeneratedFilesTotal++
 			*totalFilesSize += int64(fileSize)
 			percentage := float64(*numOfGeneratedFilesTotal) / float64(totalNumOfFiles) * 100
-			fmt.Printf("Generated %d/%d files (%.0f%%)\n", *numOfGeneratedFilesTotal, totalNumOfFiles, percentage)
+			fmt.Printf("Generated %d/%d files (%.2f%%)\n", *numOfGeneratedFilesTotal, totalNumOfFiles, percentage)
 		}
 	}
 

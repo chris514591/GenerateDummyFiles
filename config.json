@@ -1,7 +1,7 @@
 {
     "path": "C:/Users/xevic/Downloads/test123/",
-    "min_num_of_files": 10,
-    "max_num_of_files": 15,
+    "min_num_of_files": 500,
+    "max_num_of_files": 501,
     "min_file_size": 10000,
     "max_file_size": 1000000,
     "file_extensions": [".txt", ".csv", ".html"]
