@@ -38,19 +38,20 @@ func main() {
 	defer errLogFile.Close()
 	log.SetOutput(errLogFile)
 
-	var totalNumOfFiles, numOfGeneratedFilesTotal int
+	var totalNumOfFiles, numOfGeneratedFilesTotal, totalFileSize int64
 
 	// Walk through directories and generate files
 	err = walkDirectories(config, func(path string, numOfFiles int, config Config) error {
-		totalNumOfFiles += numOfFiles
-		return generateFiles(path, numOfFiles, config, &numOfGeneratedFilesTotal, totalNumOfFiles)
+		totalNumOfFiles += int64(numOfFiles)
+		return generateFiles(path, numOfFiles, config, &numOfGeneratedFilesTotal, totalNumOfFiles, &totalFileSize)
 	})
 	if err != nil {
 		log.Printf("Failed to walk directory: %v", err)
 	}
 
-	// Print the summary of generated files
+	// Print the summary of generated files and total file size
 	fmt.Printf("Generated all files (%d/%d, %.0f%%)\n", numOfGeneratedFilesTotal, totalNumOfFiles, float64(numOfGeneratedFilesTotal)/float64(totalNumOfFiles)*100)
+	fmt.Printf("Total file size: %.2f MB\n", float64(totalFileSize)/1024/1024)
 
 	// Wait for user input before exiting
 	waitForEnterKey()
@@ -114,7 +115,7 @@ func walkDirectories(config Config, generateFilesFunc func(string, int, Config) 
 }
 
 // generateFiles generates the specified number of files in the given path with random content.
-func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFilesTotal *int, totalNumOfFiles int) error {
+func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFilesTotal *int64, totalNumOfFiles int64, totalFileSize *int64) error {
 	for i := 1; i <= numOfFiles; i++ {
 		// Generate random file size, extension, and file name
 		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
@@ -122,7 +123,7 @@ func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFil
 		fileName := generateFileName(10)
 
 		// Generate a file with random content
-		err := generateFile(filepath.Join(path, fileName+extension), fileSize)
+		err := generateFile(filepath.Join(path, fileName+extension), fileSize, totalFileSize)
 		if err != nil {
 			log.Printf("Failed to generate file: %v", err)
 		} else {
@@ -148,32 +149,21 @@ func generateFileName(length int) string {
 }
 
 // generateFile creates a file with the specified file path and writes the provided data into it.
-func generateFile(filePath string, fileSize int) error {
-	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0644)
+func generateFile(filePath string, fileSize int, totalFileSize *int64) error {
+	file, err := os.Create(filePath)
 	if err != nil {
 		log.Printf("Failed to create file: %v", err)
 		return err
 	}
 	defer file.Close()
 
-	// Write "Success" at the beginning of the file
+	// Increase the total file size
+	*totalFileSize += int64(fileSize)
+
+	// Write "Success" to the file
 	_, err = file.WriteString("Success")
 	if err != nil {
 		log.Printf("Failed to write data to file: %v", err)
-		return err
-	}
-
-	// Calculate the remaining size after writing "Success"
-	remainingSize := fileSize - len("Success")
-
-	// Create a byte slice of the remaining size filled with zeroes
-	data := make([]byte, remainingSize)
-
-	// Write the data to the file
-	_, err = file.Write(data)
-	if err != nil {
-		log.Printf("Failed to write data to file: %v", err)
-		return err
 	}
 
 	return nil
