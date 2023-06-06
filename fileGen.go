@@ -39,11 +39,12 @@ func main() {
 	log.SetOutput(errLogFile)
 
 	var totalNumOfFiles, numOfGeneratedFilesTotal int
+	var totalFilesSize int64
 
 	// Walk through directories and generate files
 	err = walkDirectories(config, func(path string, numOfFiles int, config Config) error {
 		totalNumOfFiles += numOfFiles
-		return generateFiles(path, numOfFiles, config, &numOfGeneratedFilesTotal, totalNumOfFiles)
+		return generateFiles(path, numOfFiles, config, &numOfGeneratedFilesTotal, &totalFilesSize, totalNumOfFiles)
 	})
 	if err != nil {
 		log.Printf("Failed to walk directory: %v", err)
@@ -51,6 +52,7 @@ func main() {
 
 	// Print the summary of generated files
 	fmt.Printf("Generated all files (%d/%d, %.0f%%)\n", numOfGeneratedFilesTotal, totalNumOfFiles, float64(numOfGeneratedFilesTotal)/float64(totalNumOfFiles)*100)
+	printFileSize("Total size of generated files", totalFilesSize)
 
 	// Wait for user input before exiting
 	waitForEnterKey()
@@ -114,7 +116,7 @@ func walkDirectories(config Config, generateFilesFunc func(string, int, Config) 
 }
 
 // generateFiles generates the specified number of files in the given path with random content.
-func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFilesTotal *int, totalNumOfFiles int) error {
+func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFilesTotal *int, totalFilesSize *int64, totalNumOfFiles int) error {
 	for i := 1; i <= numOfFiles; i++ {
 		// Generate random file size, extension, and file name
 		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
@@ -127,6 +129,7 @@ func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFil
 			log.Printf("Failed to generate file: %v", err)
 		} else {
 			*numOfGeneratedFilesTotal++
+			*totalFilesSize += int64(fileSize)
 			percentage := float64(*numOfGeneratedFilesTotal) / float64(totalNumOfFiles) * 100
 			fmt.Printf("Generated %d/%d files (%.0f%%)\n", *numOfGeneratedFilesTotal, totalNumOfFiles, percentage)
 		}
@@ -177,4 +180,11 @@ func generateFile(filePath string, fileSize int) error {
 	}
 
 	return nil
+}
+
+// Function to print file size in bytes, megabytes, and gigabytes
+func printFileSize(label string, size int64) {
+	fmt.Printf("%s: %d bytes\n", label, size)
+	fmt.Printf("%s: %.2f MB\n", label, float64(size)/(1024*1024))
+	fmt.Printf("%s: %.2f GB\n", label, float64(size)/(1024*1024*1024))
 }
