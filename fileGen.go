@@ -41,14 +41,24 @@ func main() {
 	var totalNumOfFiles, numOfGeneratedFilesTotal int
 	var totalFilesSize int64
 
+	// Measure start time
+	startTime := time.Now()
+
 	// Walk through directories and generate files
 	err = walkDirectories(config, func(path string, numOfFiles int, config Config) error {
 		totalNumOfFiles += numOfFiles
-		return generateFiles(path, numOfFiles, config, &numOfGeneratedFilesTotal, &totalFilesSize, totalNumOfFiles)
+		return generateFiles(path, numOfFiles, config, &numOfGeneratedFilesTotal, &totalFilesSize, totalNumOfFiles, startTime)
 	})
 	if err != nil {
 		log.Printf("Failed to walk directory: %v", err)
 	}
+
+	// Measure end time
+	endTime := time.Now()
+
+	// Calculate and print elapsed time in seconds
+	elapsedTime := endTime.Sub(startTime).Seconds()
+	fmt.Printf("Elapsed time: %.2f seconds\n", elapsedTime)
 
 	// Print the summary of generated files
 	fmt.Printf("Generated all files (%d/%d, %.2f%%)\n", numOfGeneratedFilesTotal, totalNumOfFiles, float64(numOfGeneratedFilesTotal)/float64(totalNumOfFiles)*100)
@@ -116,7 +126,7 @@ func walkDirectories(config Config, generateFilesFunc func(string, int, Config) 
 }
 
 // generateFiles generates the specified number of files in the given path with random content.
-func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFilesTotal *int, totalFilesSize *int64, totalNumOfFiles int) error {
+func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFilesTotal *int, totalFilesSize *int64, totalNumOfFiles int, startTime time.Time) error {
 	for i := 1; i <= numOfFiles; i++ {
 		// Generate random file size, extension, and file name
 		fileSize := rand.Intn(config.MaxFileSize-config.MinFileSize) + config.MinFileSize
@@ -131,7 +141,8 @@ func generateFiles(path string, numOfFiles int, config Config, numOfGeneratedFil
 			*numOfGeneratedFilesTotal++
 			*totalFilesSize += int64(fileSize)
 			percentage := float64(*numOfGeneratedFilesTotal) / float64(totalNumOfFiles) * 100
-			fmt.Printf("Generated %d/%d files (%.2f%%)\n", *numOfGeneratedFilesTotal, totalNumOfFiles, percentage)
+			elapsedTime := time.Since(startTime).Seconds()
+			fmt.Printf("Generated %d/%d files (%.2f%%) | Elapsed time: %.2f seconds\n", *numOfGeneratedFilesTotal, totalNumOfFiles, percentage, elapsedTime)
 		}
 	}
 
