@@ -1,6 +1,6 @@
 ﻿$repositoryUrl = "https://github.com/chris514591/GenerateDummyFiles"
 $accessToken = "YOUR_ACCESS_TOKEN" # Set this to your access token if the repository is private
-$outputPath = "C:\Users\xevic\Download\GenerateDummyFiles"
+$outputPath = "C:\Users\xevic\Downloads\GenerateDummyFiles"
 $errorLogPath = Join-Path -Path $PSScriptRoot -ChildPath "errors.log"
 
 # Function to log errors to a file
